@@ -28,7 +28,11 @@ export default function RootLayout({
         <header className="site-header">
           <div className="container">
             <a href="/" className="logo">
-              Loja Online
+              <img
+                src="/images/EaarthLogo.png"
+                alt="Logo"
+                className="logo-img"
+              />
             </a>
             <nav className="nav">
               <a href="/">Produtos</a>
@@ -41,7 +45,7 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
-        <main className="container">{children}</main>
+        <main className="container main-content">{children}</main>
       </body>
     </html>
   );

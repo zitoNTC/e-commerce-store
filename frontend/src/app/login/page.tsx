@@ -27,9 +27,10 @@ export default function LoginPage() {
   };
 
   return (
-    <section className="stack" style={{ maxWidth: 420 }}>
-      <h1>Entrar</h1>
-      <form className="stack" onSubmit={handleSubmit}>
+    <section className="auth-page">
+      <div className="auth-card stack">
+        <h1>Entrar</h1>
+        <form className="stack" onSubmit={handleSubmit}>
         <input
           className="input"
           placeholder="Usuário"
@@ -46,10 +47,11 @@ export default function LoginPage() {
           required
         />
         {error ? <p>{error}</p> : null}
-        <button className="button" type="submit" disabled={loading}>
-          Entrar
-        </button>
-      </form>
+          <button className="button" type="submit" disabled={loading}>
+            Entrar
+          </button>
+        </form>
+      </div>
     </section>
   );
 }

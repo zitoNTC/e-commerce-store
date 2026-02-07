@@ -23,22 +23,17 @@ export default async function Home() {
       ) : (
         <div className="grid">
           {products.map((product) => (
-            <div key={product.id} className="card stack">
+            <div key={product.id} className="card product-card">
               {product.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  style={{ width: "100%", height: 160, objectFit: "cover" }}
+                  className="product-image"
                 />
               ) : (
                 <div
-                  style={{
-                    width: "100%",
-                    height: 160,
-                    background: "#f3f4f6",
-                    borderRadius: 6,
-                  }}
+                  className="product-image placeholder"
                 />
               )}
               <div className="stack">

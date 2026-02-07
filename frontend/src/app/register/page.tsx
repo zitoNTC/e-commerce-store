@@ -28,9 +28,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <section className="stack" style={{ maxWidth: 420 }}>
-      <h1>Cadastro</h1>
-      <form className="stack" onSubmit={handleSubmit}>
+    <section className="auth-page">
+      <div className="auth-card stack">
+        <h1>Cadastro</h1>
+        <form className="stack" onSubmit={handleSubmit}>
         <input
           className="input"
           placeholder="Usuário"
@@ -54,10 +55,11 @@ export default function RegisterPage() {
           required
         />
         {error ? <p>{error}</p> : null}
-        <button className="button" type="submit" disabled={loading}>
-          Criar conta
-        </button>
-      </form>
+          <button className="button" type="submit" disabled={loading}>
+            Criar conta
+          </button>
+        </form>
+      </div>
     </section>
   );
 }
