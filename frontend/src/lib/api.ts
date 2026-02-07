@@ -4,6 +4,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type FetchOptions = RequestInit & { isForm?: boolean };
 
+async function clearAuthCookies() {
+  try {
+    await fetch(`${API_URL}/api/auth/logout/`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {
+    // ignore logout errors
+  }
+}
+
 async function request<T>(path: string, options: FetchOptions = {}): Promise<T> {
   const headers: HeadersInit = options.isForm
     ? {}
@@ -22,6 +33,13 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
       detail = data.detail || JSON.stringify(data);
     } catch {
       // ignore parse error
+    }
+    if (
+      response.status === 401 &&
+      !path.startsWith("/api/auth/login/") &&
+      !path.startsWith("/api/auth/register/")
+    ) {
+      await clearAuthCookies();
     }
     throw new Error(detail);
   }
