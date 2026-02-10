@@ -35,7 +35,7 @@ export default function CartPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao finalizar.";
       if (message.includes("401")) {
-        router.push("/login");
+        router.push("/auth");
       } else {
         setError(message);
       }

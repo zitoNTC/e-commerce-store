@@ -19,7 +19,7 @@ export default function OrdersPage() {
         setOrders(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao carregar.");
-        router.push("/login");
+        router.push("/auth");
       }
     };
     load();

@@ -52,7 +52,7 @@ export default function AdminProductsPage() {
         await loadProducts();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao carregar.");
-        router.push("/login");
+        router.push("/auth");
       }
     };
     init();

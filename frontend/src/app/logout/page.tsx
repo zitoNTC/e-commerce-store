@@ -12,10 +12,11 @@ export default function LogoutPage() {
     const handleLogout = async () => {
       try {
         await logout();
+        window.dispatchEvent(new Event("auth-changed"));
       } catch {
         // ignore
       } finally {
-        router.push("/login");
+        router.push("/auth");
       }
     };
     handleLogout();

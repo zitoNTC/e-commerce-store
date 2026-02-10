@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import NavBar from "@/components/nav-bar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,15 +35,7 @@ export default function RootLayout({
                 className="logo-img"
               />
             </a>
-            <nav className="nav">
-              <a href="/">Produtos</a>
-              <a href="/cart">Carrinho</a>
-              <a href="/orders">Pedidos</a>
-              <a href="/admin/products">Admin</a>
-              <a href="/login">Entrar</a>
-              <a href="/register">Cadastro</a>
-              <a href="/logout">Sair</a>
-            </nav>
+            <NavBar />
           </div>
         </header>
         <main className="container main-content">{children}</main>

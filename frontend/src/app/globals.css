@@ -162,7 +162,8 @@ a {
 .grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, 220px);
+  justify-content: center;
 }
 
 .button {
@@ -221,6 +222,30 @@ textarea {
   border-radius: 16px;
   padding: 28px;
   box-shadow: none;
+}
+
+.auth-switch {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 6px;
+  border-radius: 999px;
+}
+
+.auth-switch-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #f8fafc;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-switch-btn.active {
+  background: #ffffff;
+  color: #0f172a;
 }
 
 h1,
