@@ -209,6 +209,23 @@ textarea {
   color: var(--muted);
 }
 
+.empty-state {
+  background: #ffffff;
+  color: #0f172a;
+  text-align: center;
+  padding: 24px 18px;
+  border-radius: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+}
+
+.empty-state-wrapper {
+  min-height: calc(75vh);
+  display: grid;
+  place-items: center;
+}
+
 .auth-page {
   min-height: calc(100vh - 140px);
   display: grid;

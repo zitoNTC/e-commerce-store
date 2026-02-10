@@ -19,7 +19,9 @@ export default async function Home() {
     <section className="stack">
       <h1>Produtos</h1>
       {products.length === 0 ? (
-        <p>Nenhum produto disponível.</p>
+        <div className="empty-state-wrapper">
+          <div className="empty-state">Nenhum produto disponível.</div>
+        </div>
       ) : (
         <div className="grid">
           {products.map((product) => (

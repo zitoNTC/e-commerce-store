@@ -48,7 +48,9 @@ export default function CartPage() {
     <section className="stack">
       <h1>Carrinho</h1>
       {items.length === 0 ? (
-        <p>Seu carrinho está vazio.</p>
+        <div className="empty-state-wrapper">
+          <div className="empty-state">Seu carrinho está vazio.</div>
+        </div>
       ) : (
         <div className="stack">
           {items.map((item) => (

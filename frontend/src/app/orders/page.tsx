@@ -30,7 +30,9 @@ export default function OrdersPage() {
       <h1>Meus pedidos</h1>
       {error ? <p>{error}</p> : null}
       {orders.length === 0 ? (
-        <p>Você ainda não possui pedidos.</p>
+        <div className="empty-state-wrapper">
+          <div className="empty-state">Você ainda não possui pedidos.</div>
+        </div>
       ) : (
         <div className="stack">
           {orders.map((order) => (
