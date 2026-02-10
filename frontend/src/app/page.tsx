@@ -1,5 +1,4 @@
-import Link from "next/link";
-
+import ProductGrid from "@/components/product-grid";
 import { Product } from "@/lib/types";
 
 async function getProducts(): Promise<Product[]> {
@@ -23,31 +22,7 @@ export default async function Home() {
           <div className="empty-state">Nenhum produto disponível.</div>
         </div>
       ) : (
-        <div className="grid">
-          {products.map((product) => (
-            <div key={product.id} className="card product-card">
-              {product.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="product-image"
-                />
-              ) : (
-                <div
-                  className="product-image placeholder"
-                />
-              )}
-              <div className="stack">
-                <strong>{product.name}</strong>
-                <span>R$ {product.price}</span>
-                <Link className="button" href={`/product/${product.id}`}>
-                  Ver detalhes
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ProductGrid products={products} />
       )}
     </section>
   );
