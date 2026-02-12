@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bebas_Neue, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/nav-bar";
 
@@ -10,6 +10,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const bebasNeue = Bebas_Neue({
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -28,12 +33,8 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <header className="site-header">
           <div className="container">
-            <a href="/" className="logo">
-              <img
-                src="/images/EaarthLogo.png"
-                alt="Logo"
-                className="logo-img"
-              />
+            <a href="/" className={`logo ${bebasNeue.className}`}>
+              EAARTH
             </a>
             <NavBar />
           </div>
