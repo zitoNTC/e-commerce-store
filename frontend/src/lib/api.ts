@@ -4,6 +4,27 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type FetchOptions = RequestInit & { isForm?: boolean };
 
+function shouldAttemptRefresh(path: string) {
+  return !(
+    path.startsWith("/api/auth/login/") ||
+    path.startsWith("/api/auth/register/") ||
+    path.startsWith("/api/auth/refresh/") ||
+    path.startsWith("/api/auth/logout/")
+  );
+}
+
+async function sendRequest(path: string, options: FetchOptions) {
+  const headers: HeadersInit = options.isForm
+    ? {}
+    : { "Content-Type": "application/json" };
+
+  return fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: { ...headers, ...(options.headers || {}) },
+    credentials: "include",
+  });
+}
+
 async function clearAuthCookies() {
   try {
     await fetch(`${API_URL}/api/auth/logout/`, {
@@ -15,16 +36,21 @@ async function clearAuthCookies() {
   }
 }
 
-async function request<T>(path: string, options: FetchOptions = {}): Promise<T> {
-  const headers: HeadersInit = options.isForm
-    ? {}
-    : { "Content-Type": "application/json" };
+async function request<T>(
+  path: string,
+  options: FetchOptions = {}
+): Promise<T> {
+  let response = await sendRequest(path, options);
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: { ...headers, ...(options.headers || {}) },
-    credentials: "include",
-  });
+  if (response.status === 401 && shouldAttemptRefresh(path)) {
+    const refreshResponse = await fetch(`${API_URL}/api/auth/refresh/`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (refreshResponse.ok) {
+      response = await sendRequest(path, options);
+    }
+  }
 
   if (!response.ok) {
     let detail = "Erro na requisição.";
@@ -34,11 +60,7 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
     } catch {
       // ignore parse error
     }
-    if (
-      response.status === 401 &&
-      !path.startsWith("/api/auth/login/") &&
-      !path.startsWith("/api/auth/register/")
-    ) {
+    if (response.status === 401 && shouldAttemptRefresh(path)) {
       await clearAuthCookies();
     }
     throw new Error(detail);
