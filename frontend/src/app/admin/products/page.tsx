@@ -3,38 +3,53 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { createProduct, deleteProduct, listProducts, me, updateProduct } from "@/lib/api";
-import { Product } from "@/lib/types";
+import {
+  createProduct,
+  createTag,
+  deleteProduct,
+  deleteTag,
+  listProducts,
+  listTags,
+  me,
+  updateProduct,
+} from "@/lib/api";
+import { Product, Tag } from "@/lib/types";
 
 type EditState = {
   name: string;
   description: string;
   price: string;
+  tag_id: number | null;
   image: File | null;
 };
 
 export default function AdminProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [editState, setEditState] = useState<Record<number, EditState>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newTagName, setNewTagName] = useState("");
   const [newProduct, setNewProduct] = useState<EditState>({
     name: "",
     description: "",
     price: "",
+    tag_id: null,
     image: null,
   });
 
-  const loadProducts = async () => {
-    const data = await listProducts();
-    setProducts(data);
+  const loadData = async () => {
+    const [productsData, tagsData] = await Promise.all([listProducts(), listTags()]);
+    setProducts(productsData);
+    setTags(tagsData);
     const nextEdit: Record<number, EditState> = {};
-    data.forEach((product) => {
+    productsData.forEach((product) => {
       nextEdit[product.id] = {
         name: product.name,
         description: product.description,
         price: product.price,
+        tag_id: product.tag?.id ?? null,
         image: null,
       };
     });
@@ -49,7 +64,7 @@ export default function AdminProductsPage() {
           router.push("/");
           return;
         }
-        await loadProducts();
+        await loadData();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao carregar.");
         router.push("/auth");
@@ -66,12 +81,23 @@ export default function AdminProductsPage() {
       formData.append("name", newProduct.name);
       formData.append("description", newProduct.description);
       formData.append("price", newProduct.price);
+      if (newProduct.tag_id !== null) {
+        formData.append("tag_id", String(newProduct.tag_id));
+      } else {
+        formData.append("tag_id", "");
+      }
       if (newProduct.image) {
         formData.append("image", newProduct.image);
       }
       await createProduct(formData);
-      setNewProduct({ name: "", description: "", price: "", image: null });
-      await loadProducts();
+      setNewProduct({
+        name: "",
+        description: "",
+        price: "",
+        tag_id: null,
+        image: null,
+      });
+      await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar produto.");
     } finally {
@@ -88,11 +114,16 @@ export default function AdminProductsPage() {
       formData.append("name", values.name);
       formData.append("description", values.description);
       formData.append("price", values.price);
+      if (values.tag_id !== null) {
+        formData.append("tag_id", String(values.tag_id));
+      } else {
+        formData.append("tag_id", "");
+      }
       if (values.image) {
         formData.append("image", values.image);
       }
       await updateProduct(productId, formData);
-      await loadProducts();
+      await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao atualizar.");
     } finally {
@@ -105,9 +136,37 @@ export default function AdminProductsPage() {
     setError(null);
     try {
       await deleteProduct(productId);
-      await loadProducts();
+      await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao remover.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateTag = async () => {
+    if (!newTagName.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await createTag(newTagName.trim());
+      setNewTagName("");
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao criar tag.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTag = async (tagId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteTag(tagId);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao remover tag.");
     } finally {
       setLoading(false);
     }
@@ -117,6 +176,35 @@ export default function AdminProductsPage() {
     <section className="stack">
       <h1>Admin - Produtos</h1>
       {error ? <p>{error}</p> : null}
+      <div className="card stack">
+        <strong>Tags</strong>
+        <div className="button-row">
+          <input
+            className="input"
+            placeholder="Nome da tag"
+            value={newTagName}
+            onChange={(event) => setNewTagName(event.target.value)}
+          />
+          <button className="button" onClick={handleCreateTag} disabled={loading}>
+            Criar tag
+          </button>
+        </div>
+        <div className="tag-list">
+          {tags.map((tag) => (
+            <div key={tag.id} className="tag-pill">
+              <span>{tag.name}</span>
+              <button
+                className="tag-pill-remove"
+                onClick={() => handleDeleteTag(tag.id)}
+                disabled={loading}
+                aria-label={`Remover tag ${tag.name}`}
+              >
+                ×
+              </button>              
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="card stack">
         <strong>Novo produto</strong>
         <input
@@ -146,6 +234,23 @@ export default function AdminProductsPage() {
             setNewProduct((prev) => ({ ...prev, price: event.target.value }))
           }
         />
+        <select
+          className="input"
+          value={newProduct.tag_id ?? ""}
+          onChange={(event) =>
+            setNewProduct((prev) => ({
+              ...prev,
+              tag_id: event.target.value ? Number(event.target.value) : null,
+            }))
+          }
+        >
+          <option value="">Sem tag</option>
+          {tags.map((tag) => (
+            <option key={tag.id} value={tag.id}>
+              {tag.name}
+            </option>
+          ))}
+        </select>
         <input
           className="input"
           type="file"
@@ -200,6 +305,26 @@ export default function AdminProductsPage() {
                   }))
                 }
               />
+              <select
+                className="input"
+                value={edit.tag_id ?? ""}
+                onChange={(event) =>
+                  setEditState((prev) => ({
+                    ...prev,
+                    [product.id]: {
+                      ...edit,
+                      tag_id: event.target.value ? Number(event.target.value) : null,
+                    },
+                  }))
+                }
+              >
+                <option value="">Sem tag</option>
+                {tags.map((tag) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.name}
+                  </option>
+                ))}
+              </select>
               <input
                 className="input"
                 type="file"

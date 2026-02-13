@@ -1,10 +1,21 @@
 from rest_framework import serializers
 
-from .models import Product
+from .models import Product, Tag
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ("id", "name", "created_at")
+        read_only_fields = ("created_at",)
 
 
 class ProductSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    tag = TagSerializer(read_only=True)
+    tag_id = serializers.PrimaryKeyRelatedField(
+        source="tag", queryset=Tag.objects.all(), allow_null=True, required=False
+    )
 
     class Meta:
         model = Product
@@ -13,6 +24,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "price",
+            "tag",
+            "tag_id",
             "image",
             "image_url",
             "created_at",

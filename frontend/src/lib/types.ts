@@ -10,8 +10,16 @@ export type Product = {
   name: string;
   description: string;
   price: string;
+  tag: Tag | null;
+  tag_id?: number | null;
   image: string | null;
   image_url: string | null;
+};
+
+export type Tag = {
+  id: number;
+  name: string;
+  created_at: string;
 };
 
 export type OrderItem = {

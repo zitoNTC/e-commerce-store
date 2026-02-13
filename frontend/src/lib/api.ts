@@ -1,4 +1,4 @@
-import { CartItemInput, Order, Product, User } from "./types";
+import { CartItemInput, Order, Product, Tag, User } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -79,6 +79,21 @@ export function me() {
 
 export function listProducts() {
   return request<Product[]>("/api/products/", { method: "GET" });
+}
+
+export function listTags() {
+  return request<Tag[]>("/api/tags/", { method: "GET" });
+}
+
+export function createTag(name: string) {
+  return request<Tag>("/api/tags/", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function deleteTag(id: number) {
+  return request<void>(`/api/tags/${id}/`, { method: "DELETE" });
 }
 
 export function getProduct(id: number) {
