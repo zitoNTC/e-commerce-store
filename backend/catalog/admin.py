@@ -11,5 +11,10 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "tag", "price", "created_at")
+    list_display = ("id", "name", "tag_list", "price", "created_at")
     search_fields = ("name",)
+
+    def tag_list(self, obj):
+        return ", ".join(obj.tags.values_list("name", flat=True))
+
+    tag_list.short_description = "Tags"

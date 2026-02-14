@@ -10,8 +10,8 @@ export type Product = {
   name: string;
   description: string;
   price: string;
-  tag: Tag | null;
-  tag_id?: number | null;
+  tags: Tag[];
+  tag_ids?: number[];
   image: string | null;
   image_url: string | null;
 };

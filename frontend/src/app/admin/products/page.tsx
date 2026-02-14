@@ -19,7 +19,7 @@ type EditState = {
   name: string;
   description: string;
   price: string;
-  tag_id: number | null;
+  tag_ids: number[];
   image: File | null;
 };
 
@@ -31,11 +31,13 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newTagName, setNewTagName] = useState("");
+  const [newTagToAdd, setNewTagToAdd] = useState("");
+  const [editTagToAdd, setEditTagToAdd] = useState<Record<number, string>>({});
   const [newProduct, setNewProduct] = useState<EditState>({
     name: "",
     description: "",
     price: "",
-    tag_id: null,
+    tag_ids: [],
     image: null,
   });
 
@@ -49,7 +51,7 @@ export default function AdminProductsPage() {
         name: product.name,
         description: product.description,
         price: product.price,
-        tag_id: product.tag?.id ?? null,
+        tag_ids: product.tags.map((tag) => tag.id),
         image: null,
       };
     });
@@ -81,11 +83,7 @@ export default function AdminProductsPage() {
       formData.append("name", newProduct.name);
       formData.append("description", newProduct.description);
       formData.append("price", newProduct.price);
-      if (newProduct.tag_id !== null) {
-        formData.append("tag_id", String(newProduct.tag_id));
-      } else {
-        formData.append("tag_id", "");
-      }
+      newProduct.tag_ids.forEach((tagId) => formData.append("tag_ids", String(tagId)));
       if (newProduct.image) {
         formData.append("image", newProduct.image);
       }
@@ -94,9 +92,10 @@ export default function AdminProductsPage() {
         name: "",
         description: "",
         price: "",
-        tag_id: null,
+        tag_ids: [],
         image: null,
       });
+      setNewTagToAdd("");
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar produto.");
@@ -114,11 +113,7 @@ export default function AdminProductsPage() {
       formData.append("name", values.name);
       formData.append("description", values.description);
       formData.append("price", values.price);
-      if (values.tag_id !== null) {
-        formData.append("tag_id", String(values.tag_id));
-      } else {
-        formData.append("tag_id", "");
-      }
+      values.tag_ids.forEach((tagId) => formData.append("tag_ids", String(tagId)));
       if (values.image) {
         formData.append("image", values.image);
       }
@@ -170,6 +165,44 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const addTagToNewProduct = () => {
+    const id = Number(newTagToAdd);
+    if (!id || newProduct.tag_ids.includes(id)) return;
+    setNewProduct((prev) => ({ ...prev, tag_ids: [...prev.tag_ids, id] }));
+    setNewTagToAdd("");
+  };
+
+  const removeTagFromNewProduct = (tagId: number) => {
+    setNewProduct((prev) => ({
+      ...prev,
+      tag_ids: prev.tag_ids.filter((id) => id !== tagId),
+    }));
+  };
+
+  const addTagToEditProduct = (productId: number) => {
+    const id = Number(editTagToAdd[productId]);
+    if (!id) return;
+    setEditState((prev) => {
+      const current = prev[productId];
+      if (!current || current.tag_ids.includes(id)) return prev;
+      return {
+        ...prev,
+        [productId]: { ...current, tag_ids: [...current.tag_ids, id] },
+      };
+    });
+    setEditTagToAdd((prev) => ({ ...prev, [productId]: "" }));
+  };
+
+  const removeTagFromEditProduct = (productId: number, tagId: number) => {
+    setEditState((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        tag_ids: prev[productId].tag_ids.filter((id) => id !== tagId),
+      },
+    }));
   };
 
   return (
@@ -234,23 +267,43 @@ export default function AdminProductsPage() {
             setNewProduct((prev) => ({ ...prev, price: event.target.value }))
           }
         />
-        <select
-          className="input"
-          value={newProduct.tag_id ?? ""}
-          onChange={(event) =>
-            setNewProduct((prev) => ({
-              ...prev,
-              tag_id: event.target.value ? Number(event.target.value) : null,
-            }))
-          }
-        >
-          <option value="">Sem tag</option>
-          {tags.map((tag) => (
-            <option key={tag.id} value={tag.id}>
-              {tag.name}
-            </option>
-          ))}
-        </select>
+        <div className="button-row">
+          <select
+            className="input"
+            value={newTagToAdd}
+            onChange={(event) => setNewTagToAdd(event.target.value)}
+          >
+            <option value="">Selecione uma tag</option>
+            {tags
+              .filter((tag) => !newProduct.tag_ids.includes(tag.id))
+              .map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+          </select>
+          <button className="button secondary" onClick={addTagToNewProduct} type="button">
+            Adicionar tag
+          </button>
+        </div>
+        <div className="tag-list">
+          {newProduct.tag_ids.map((tagId) => {
+            const tag = tags.find((item) => item.id === tagId);
+            if (!tag) return null;
+            return (
+              <div key={tag.id} className="tag-pill">
+                <span>{tag.name}</span>
+                <button
+                  className="tag-pill-remove"
+                  onClick={() => removeTagFromNewProduct(tag.id)}
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
+        </div>
         <input
           className="input"
           type="file"
@@ -305,26 +358,52 @@ export default function AdminProductsPage() {
                   }))
                 }
               />
-              <select
-                className="input"
-                value={edit.tag_id ?? ""}
-                onChange={(event) =>
-                  setEditState((prev) => ({
-                    ...prev,
-                    [product.id]: {
-                      ...edit,
-                      tag_id: event.target.value ? Number(event.target.value) : null,
-                    },
-                  }))
-                }
-              >
-                <option value="">Sem tag</option>
-                {tags.map((tag) => (
-                  <option key={tag.id} value={tag.id}>
-                    {tag.name}
-                  </option>
-                ))}
-              </select>
+              <div className="button-row">
+                <select
+                  className="input"
+                  value={editTagToAdd[product.id] ?? ""}
+                  onChange={(event) =>
+                    setEditTagToAdd((prev) => ({
+                      ...prev,
+                      [product.id]: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Selecione uma tag</option>
+                  {tags
+                    .filter((tag) => !edit.tag_ids.includes(tag.id))
+                    .map((tag) => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.name}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  className="button secondary"
+                  onClick={() => addTagToEditProduct(product.id)}
+                  type="button"
+                >
+                  Adicionar tag
+                </button>
+              </div>
+              <div className="tag-list">
+                {edit.tag_ids.map((tagId) => {
+                  const tag = tags.find((item) => item.id === tagId);
+                  if (!tag) return null;
+                  return (
+                    <div key={tag.id} className="tag-pill">
+                      <span>{tag.name}</span>
+                      <button
+                        className="tag-pill-remove"
+                        onClick={() => removeTagFromEditProduct(product.id, tag.id)}
+                        type="button"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
               <input
                 className="input"
                 type="file"

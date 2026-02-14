@@ -12,9 +12,9 @@ class TagSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
-    tag = TagSerializer(read_only=True)
-    tag_id = serializers.PrimaryKeyRelatedField(
-        source="tag", queryset=Tag.objects.all(), allow_null=True, required=False
+    tags = TagSerializer(many=True, read_only=True)
+    tag_ids = serializers.PrimaryKeyRelatedField(
+        source="tags", many=True, queryset=Tag.objects.all(), required=False
     )
 
     class Meta:
@@ -24,8 +24,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "price",
-            "tag",
-            "tag_id",
+            "tags",
+            "tag_ids",
             "image",
             "image_url",
             "created_at",
