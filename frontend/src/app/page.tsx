@@ -1,5 +1,5 @@
 import ProductGrid from "@/components/product-grid";
-import { Product } from "@/lib/types";
+import { Product, Tag } from "@/lib/types";
 
 async function getProducts(): Promise<Product[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -12,8 +12,19 @@ async function getProducts(): Promise<Product[]> {
   return response.json();
 }
 
+async function getTags(): Promise<Tag[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const response = await fetch(`${apiUrl}/api/tags/`, {
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    return [];
+  }
+  return response.json();
+}
+
 export default async function Home() {
-  const products = await getProducts();
+  const [products, tags] = await Promise.all([getProducts(), getTags()]);
   return (
     <section className="stack">
       <h1>Produtos</h1>
@@ -22,7 +33,7 @@ export default async function Home() {
           <div className="empty-state">Nenhum produto disponível.</div>
         </div>
       ) : (
-        <ProductGrid products={products} />
+        <ProductGrid products={products} tags={tags} />
       )}
     </section>
   );
