@@ -52,37 +52,44 @@ export default function CartPage() {
           <div className="empty-state">Seu carrinho está vazio.</div>
         </div>
       ) : (
-        <div className="stack">
-          {items.map((item) => (
-            <div key={item.product.id} className="card stack">
-              <strong>{item.product.name}</strong>
-              <span>R$ {item.product.price}</span>
-              <input
-                className="input"
-                type="number"
-                min={1}
-                value={item.quantity}
-                onChange={(event) =>
-                  updateQuantity(item.product.id, Number(event.target.value))
-                }
-              />
-              <button
-                className="button danger"
-                onClick={() => removeItem(item.product.id)}
-              >
-                Remover
-              </button>
-            </div>
-          ))}
-          <strong>Total: R$ {total.toFixed(2)}</strong>
-          {error ? <p>{error}</p> : null}
-          <button
-            className="button"
-            onClick={handleCheckout}
-            disabled={loading}
-          >
-            Finalizar compra
-          </button>
+        <div className="cart-layout">
+          <div className="stack cart-items-column">
+            {items.map((item) => (
+              <div key={item.product.id} className="card stack">
+                <strong>{item.product.name}</strong>
+                <span>R$ {item.product.price}</span>
+                <input
+                  className="input"
+                  type="number"
+                  min={1}
+                  value={item.quantity}
+                  onChange={(event) =>
+                    updateQuantity(item.product.id, Number(event.target.value))
+                  }
+                />
+                <button
+                  className="button danger"
+                  onClick={() => removeItem(item.product.id)}
+                >
+                  Remover
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <aside className="card stack cart-summary-panel">
+            <strong>Resumo da compra</strong>
+            <span>{items.length} {items.length === 1 ? "produto" : "produtos"}</span>
+            <strong>Total: R$ {total.toFixed(2)}</strong>
+            {error ? <p>{error}</p> : null}
+            <button
+              className="button"
+              onClick={handleCheckout}
+              disabled={loading}
+            >
+              Finalizar compra
+            </button>
+          </aside>
         </div>
       )}
     </section>

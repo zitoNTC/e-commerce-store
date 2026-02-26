@@ -261,131 +261,137 @@ export default function AdminProductsPage() {
       <h1>Admin - Produtos</h1>
       {error ? <p>{error}</p> : null}
       {info ? <p>{info}</p> : null}
-      <div className="card stack">
-        <strong>Autoload de produtos</strong>
-        <p>
-          Usa os dados de <code>backend/catalog/seed_products.py</code> e as imagens em{" "}
-          <code>backend/seed_data/products</code>.
-        </p>
-        <button className="button" onClick={handleAutoloadProducts} disabled={loading}>
-          Rodar autoload
-        </button>
-        <button
-          className="button danger"
-          onClick={handleClearAllProducts}
-          disabled={loading}
-        >
-          Remover todos os produtos
-        </button>
-      </div>
-      <div className="card stack">
-        <strong>Tags</strong>
-        <div className="button-row">
+      <div className="card admin-quick-actions-layout">
+        <div className="stack admin-create-product">
+          <strong>Novo produto</strong>
           <input
             className="input"
-            placeholder="Nome da tag"
-            value={newTagName}
-            onChange={(event) => setNewTagName(event.target.value)}
+            placeholder="Nome"
+            value={newProduct.name}
+            onChange={(event) =>
+              setNewProduct((prev) => ({ ...prev, name: event.target.value }))
+            }
           />
-          <button className="button" onClick={handleCreateTag} disabled={loading}>
-            Criar tag
-          </button>
-        </div>
-        <div className="tag-list">
-          {tags.map((tag) => (
-            <div key={tag.id} className="tag-pill">
-              <span>{tag.name}</span>
-              <button
-                className="tag-pill-remove"
-                onClick={() => handleDeleteTag(tag.id)}
-                disabled={loading}
-                aria-label={`Remover tag ${tag.name}`}
-              >
-                ×
-              </button>              
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="card stack">
-        <strong>Novo produto</strong>
-        <input
-          className="input"
-          placeholder="Nome"
-          value={newProduct.name}
-          onChange={(event) =>
-            setNewProduct((prev) => ({ ...prev, name: event.target.value }))
-          }
-        />
-        <textarea
-          className="input"
-          placeholder="Descrição"
-          value={newProduct.description}
-          onChange={(event) =>
-            setNewProduct((prev) => ({
-              ...prev,
-              description: event.target.value,
-            }))
-          }
-        />
-        <input
-          className="input"
-          placeholder="Preço"
-          value={newProduct.price}
-          onChange={(event) =>
-            setNewProduct((prev) => ({ ...prev, price: event.target.value }))
-          }
-        />
-        <div className="button-row">
-          <select
+          <textarea
             className="input"
-            value={newTagToAdd}
-            onChange={(event) => setNewTagToAdd(event.target.value)}
-          >
-            <option value="">Selecione uma tag</option>
-            {tags
-              .filter((tag) => !newProduct.tag_ids.includes(tag.id))
-              .map((tag) => (
-                <option key={tag.id} value={tag.id}>
-                  {tag.name}
-                </option>
-              ))}
-          </select>
-          <button className="button secondary" onClick={addTagToNewProduct} type="button">
-            Adicionar tag
+            placeholder="Descrição"
+            value={newProduct.description}
+            onChange={(event) =>
+              setNewProduct((prev) => ({
+                ...prev,
+                description: event.target.value,
+              }))
+            }
+          />
+          <input
+            className="input"
+            placeholder="Preço"
+            value={newProduct.price}
+            onChange={(event) =>
+              setNewProduct((prev) => ({ ...prev, price: event.target.value }))
+            }
+          />
+          <div className="button-row">
+            <select
+              className="input"
+              value={newTagToAdd}
+              onChange={(event) => setNewTagToAdd(event.target.value)}
+            >
+              <option value="">Selecione uma tag</option>
+              {tags
+                .filter((tag) => !newProduct.tag_ids.includes(tag.id))
+                .map((tag) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.name}
+                  </option>
+                ))}
+            </select>
+            <button className="button secondary" onClick={addTagToNewProduct} type="button">
+              Adicionar tag
+            </button>
+          </div>
+          <div className="tag-list">
+            {newProduct.tag_ids.map((tagId) => {
+              const tag = tags.find((item) => item.id === tagId);
+              if (!tag) return null;
+              return (
+                <div key={tag.id} className="tag-pill">
+                  <span>{tag.name}</span>
+                  <button
+                    className="tag-pill-remove"
+                    onClick={() => removeTagFromNewProduct(tag.id)}
+                    type="button"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <input
+            className="input"
+            type="file"
+            onChange={(event) =>
+              setNewProduct((prev) => ({
+                ...prev,
+                image: event.target.files?.[0] || null,
+              }))
+            }
+          />
+          <button className="button" onClick={handleCreate} disabled={loading}>
+            Criar produto
           </button>
         </div>
-        <div className="tag-list">
-          {newProduct.tag_ids.map((tagId) => {
-            const tag = tags.find((item) => item.id === tagId);
-            if (!tag) return null;
-            return (
-              <div key={tag.id} className="tag-pill">
-                <span>{tag.name}</span>
-                <button
-                  className="tag-pill-remove"
-                  onClick={() => removeTagFromNewProduct(tag.id)}
-                  type="button"
-                >
-                  ×
-                </button>
-              </div>
-            );
-          })}
+
+        <div className="stack admin-right-column">
+          <div className="stack admin-right-panel">
+            <strong>Tags</strong>
+            <div className="button-row">
+              <input
+                className="input"
+                placeholder="Nome da tag"
+                value={newTagName}
+                onChange={(event) => setNewTagName(event.target.value)}
+              />
+              <button className="button" onClick={handleCreateTag} disabled={loading}>
+                Criar tag
+              </button>
+            </div>
+            <div className="tag-list">
+              {tags.map((tag) => (
+                <div key={tag.id} className="tag-pill">
+                  <span>{tag.name}</span>
+                  <button
+                    className="tag-pill-remove"
+                    onClick={() => handleDeleteTag(tag.id)}
+                    disabled={loading}
+                    aria-label={`Remover tag ${tag.name}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="stack admin-right-panel">
+            <strong>Autoload de produtos</strong>
+            <p>
+              Usa os dados de <code>backend/catalog/seed_products.py</code> e as imagens em{" "}
+              <code>backend/seed_data/products</code>.
+            </p>
+            <button className="button" onClick={handleAutoloadProducts} disabled={loading}>
+              Rodar autoload
+            </button>
+            <button
+              className="button danger"
+              onClick={handleClearAllProducts}
+              disabled={loading}
+            >
+              Remover todos os produtos
+            </button>
+          </div>
         </div>
-        <input
-          className="input"
-          type="file"
-          onChange={(event) =>
-            setNewProduct((prev) => ({
-              ...prev,
-              image: event.target.files?.[0] || null,
-            }))
-          }
-        />
-        <button className="button" onClick={handleCreate} disabled={loading}>
-          Criar produto
-        </button>
       </div>
       <div className="stack">
         {products.map((product) => {
