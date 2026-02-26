@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
+  autoloadProducts,
+  clearAllProducts,
   createProduct,
   createTag,
   deleteProduct,
@@ -30,6 +32,7 @@ export default function AdminProductsPage() {
   const [editState, setEditState] = useState<Record<number, EditState>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [newTagName, setNewTagName] = useState("");
   const [newTagToAdd, setNewTagToAdd] = useState("");
   const [editTagToAdd, setEditTagToAdd] = useState<Record<number, string>>({});
@@ -78,6 +81,7 @@ export default function AdminProductsPage() {
   const handleCreate = async () => {
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       const formData = new FormData();
       formData.append("name", newProduct.name);
@@ -107,6 +111,7 @@ export default function AdminProductsPage() {
   const handleUpdate = async (productId: number) => {
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       const values = editState[productId];
       const formData = new FormData();
@@ -129,6 +134,7 @@ export default function AdminProductsPage() {
   const handleDelete = async (productId: number) => {
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       await deleteProduct(productId);
       await loadData();
@@ -143,6 +149,7 @@ export default function AdminProductsPage() {
     if (!newTagName.trim()) return;
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       await createTag(newTagName.trim());
       setNewTagName("");
@@ -157,6 +164,7 @@ export default function AdminProductsPage() {
   const handleDeleteTag = async (tagId: number) => {
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       await deleteTag(tagId);
       await loadData();
@@ -205,10 +213,71 @@ export default function AdminProductsPage() {
     }));
   };
 
+  const handleAutoloadProducts = async () => {
+    const confirmed = window.confirm(
+      "Deseja rodar o autoload de produtos agora? Isso pode criar/atualizar produtos existentes."
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    setError(null);
+    setInfo(null);
+    try {
+      const result = await autoloadProducts();
+      const missing = result.missing_images.length
+        ? ` | Imagens ausentes: ${result.missing_images.join(", ")}`
+        : "";
+      setInfo(`Autoload concluido. Criados: ${result.created}, Atualizados: ${result.updated}${missing}`);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro no autoload de produtos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearAllProducts = async () => {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja remover TODOS os produtos? Esta ação não pode ser desfeita."
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    setError(null);
+    setInfo(null);
+    try {
+      const result = await clearAllProducts();
+      setInfo(`Remocao concluida. Produtos removidos: ${result.deleted}`);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao remover todos os produtos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="stack">
       <h1>Admin - Produtos</h1>
       {error ? <p>{error}</p> : null}
+      {info ? <p>{info}</p> : null}
+      <div className="card stack">
+        <strong>Autoload de produtos</strong>
+        <p>
+          Usa os dados de <code>backend/catalog/seed_products.py</code> e as imagens em{" "}
+          <code>backend/seed_data/products</code>.
+        </p>
+        <button className="button" onClick={handleAutoloadProducts} disabled={loading}>
+          Rodar autoload
+        </button>
+        <button
+          className="button danger"
+          onClick={handleClearAllProducts}
+          disabled={loading}
+        >
+          Remover todos os produtos
+        </button>
+      </div>
       <div className="card stack">
         <strong>Tags</strong>
         <div className="button-row">

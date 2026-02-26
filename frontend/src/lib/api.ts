@@ -142,6 +142,19 @@ export function deleteProduct(id: number) {
   return request<void>(`/api/products/${id}/`, { method: "DELETE" });
 }
 
+export function autoloadProducts() {
+  return request<{ created: number; updated: number; missing_images: string[] }>(
+    "/api/products/autoload/",
+    { method: "POST" }
+  );
+}
+
+export function clearAllProducts() {
+  return request<{ deleted: number }>("/api/products/clear/", {
+    method: "DELETE",
+  });
+}
+
 export function checkout(items: CartItemInput[]) {
   return request<Order>("/api/orders/checkout/", {
     method: "POST",
